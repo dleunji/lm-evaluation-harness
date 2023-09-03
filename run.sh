@@ -1,0 +1,1 @@
+python main.py --model=hf-causal-experimental --model_args="pretrained=/home/mlsys/workspace/flying_bird/hf_llama1/quantization_v2/quantized_30b_v2_safetensor,use_accelerate=True,revision=main,quantized=True,gptq_use_triton=True" --tasks=hellaswag --num_fewshot=10 --batch_size=2 --output_path=output
