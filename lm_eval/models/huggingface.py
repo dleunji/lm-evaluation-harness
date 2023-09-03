@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Mapping, NewType, Optional, Tuple, Union
 from tqdm import tqdm
 
-from transformers import BatchEncoding
+from transformers import BatchEncoding, AutoTokenizer
 
 from lm_eval import utils
 from lm_eval.base import BaseLM
@@ -319,8 +319,8 @@ class HuggingFaceAutoLM(BaseLM):
             from auto_gptq import AutoGPTQForCausalLM
             model = AutoGPTQForCausalLM.from_quantized(
                 pretrained,
-                model_basename=None if quantized == True else Path(quantized).stem,
-                device_map=device_map,
+                model_basename="gptq_model-4bit-128g" if quantized == True else Path(quantized).stem,
+                device_map={"": 0},
                 max_memory=max_memory,
                 trust_remote_code=trust_remote_code,
                 use_safetensors=True if quantized == True else quantized.endswith('.safetensors'),
@@ -328,6 +328,7 @@ class HuggingFaceAutoLM(BaseLM):
                 warmup_triton=gptq_use_triton,
                 inject_fused_attention=inject_fused_attention,
             )
+            print(model.hf_device_map)
         return model
 
     def _create_auto_model_peft(
@@ -358,11 +359,12 @@ class HuggingFaceAutoLM(BaseLM):
         trust_remote_code: Optional[bool] = False,
     ) -> transformers.PreTrainedTokenizer:
         """Returns a pre-trained tokenizer from a pre-trained tokenizer configuration."""
-        tokenizer = self.AUTO_TOKENIZER_CLASS.from_pretrained(
-            pretrained if tokenizer is None else tokenizer,
-            revision=revision + ("/" + subfolder if subfolder is not None else ""),
-            trust_remote_code=trust_remote_code,
-        )
+        # tokenizer = self.AUTO_TOKENIZER_CLASS.from_pretrained(
+        #     pretrained if tokenizer is None else tokenizer,
+        #     revision=revision + ("/" + subfolder if subfolder is not None else ""),
+        #     trust_remote_code=trust_remote_code,
+        # )
+        tokenizer = AutoTokenizer.from_pretrained("huggyllama/llama-30b")
         tokenizer.pad_token = tokenizer.eos_token
         return tokenizer
 
